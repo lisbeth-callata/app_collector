@@ -1,0 +1,69 @@
+<resources>
+    <string name="app_name">EcoCollet Recolector</string>
+    <string name="login_title">Iniciar Sesión Recolector</string>
+    <string name="hint_email_username">Email o usuario</string>
+    <string name="hint_password">Contraseña</string>
+    <string name="error_credentials">Credenciales incorrectas</string>
+    <string name="error_connection">Error de conexión</string>
+    <string name="success_login">Inicio de sesión exitoso</string>
+    <string name="welcome_collector">Bienvenido Recolector</string>
+    <string name="collector_description">Gestión de solicitudes de recolección</string>
+
+    <!-- Dashboard -->
+    <string name="title_dashboard">Dashboard Recolector</string>
+    <string name="today_requests">Solicitudes de Hoy</string>
+    <string name="pending_requests">Pendientes</string>
+    <string name="collected_requests">Recolectadas</string>
+    <string name="total_requests">Total Solicitudes</string>
+
+    <!-- Estados -->
+    <string name="status_pending">PENDIENTE</string>
+    <string name="status_scheduled">PROGRAMADO</string>
+    <string name="status_collected">RECOLECTADO</string>
+    <string name="status_cancelled">CANCELADO</string>
+
+    <!-- Acciones -->
+    <string name="action_update">Actualizar</string>
+    <string name="action_view_map">Ver Mapa</string>
+    <string name="action_call">Llamar</string>
+    <string name="action_navigate">Navegar</string>
+
+    <!-- Mensajes -->
+    <string name="msg_no_requests">No hay solicitudes para hoy</string>
+    <string name="msg_request_updated">Solicitud actualizada exitosamente</string>
+    <string name="msg_confirm_collection">¿Confirmar recolección?</string>
+
+    <string name="quick_register_title">Registro Rápido</string>
+    <string name="performance_title">Mi Rendimiento</string>
+    <string name="use_current_location">Usar ubicación actual</string>
+    <string name="hint_latitude">Latitud</string>
+    <string name="hint_longitude">Longitud</string>
+    <string name="assignment_available">Disponible</string>
+    <string name="assignment_pending">Asignada</string>
+    <string name="assignment_in_progress">En progreso</string>
+    <string name="assignment_completed">Completada</string>
+    <string name="assignment_expired">Expirada</string>
+    <string name="assignment_cancelled">Cancelada</string>
+
+    <string name="action_claim">Reclamar</string>
+    <string name="action_release">Liberar</string>
+    <string name="action_complete">Completar</string>
+
+    <string name="msg_claim_success">Solicitud reclamada exitosamente</string>
+    <string name="msg_release_success">Solicitud liberada exitosamente</string>
+    <string name="msg_complete_success">Solicitud completada exitosamente</string>
+    <!-- Material Options -->
+    <string-array name="material_options">
+        <item>Seleccionar material</item>
+        <item>Plástico</item>
+        <item>Vidrio</item>
+        <item>Papel</item>
+        <item>Cartón</item>
+        <item>Metal</item>
+        <item>Orgánico</item>
+        <item>Electrónicos</item>
+        <item>Textiles</item>
+        <item>Peligrosos</item>
+        <item>Otros</item>
+    </string-array>
+</resources>

@@ -1,0 +1,155 @@
+package com.ecocollet.collector.ui.requests
+
+import android.content.Intent
+import android.net.Uri
+import android.os.Bundle
+import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
+import com.ecocollet.collector.model.CollectionRequest
+import com.ecocollet.collector.R
+import com.ecocollet.collector.databinding.ActivityRequestDetailBinding
+
+class RequestDetailActivity : AppCompatActivity() {
+
+    private lateinit var binding: ActivityRequestDetailBinding
+    private lateinit var currentRequest: CollectionRequest
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        binding = ActivityRequestDetailBinding.inflate(layoutInflater)
+        setContentView(binding.root)
+
+        setupToolbar()
+        getRequestData()
+        setupListeners()
+    }
+
+    private fun setupToolbar() {
+        binding.toolbar.setNavigationOnClickListener {
+            finish()
+        }
+    }
+
+    private fun getRequestData() {
+        currentRequest = intent.getParcelableExtra("REQUEST") ?: run {
+            Toast.makeText(this, "Error: Solicitud no válida", Toast.LENGTH_SHORT).show()
+            finish()
+            return
+        }
+        populateRequestData()
+    }
+
+    private fun populateRequestData() {
+        with(binding) {
+            tvRequestCode.text = currentRequest.code
+            tvUserName.text = currentRequest.userName
+            tvUserPhone.text = currentRequest.userPhone ?: "No disponible"
+            tvMaterial.text = currentRequest.material
+            tvDescription.text = currentRequest.description ?: "Sin descripción"
+            tvAddress.text = currentRequest.address ?: "No especificada"
+            tvCreatedAt.text = formatDate(currentRequest.createdAt)
+
+            tvWeight.text = if (currentRequest.weight != null) {
+                "${currentRequest.weight} kg"
+            } else {
+                "Pendiente"
+            }
+
+            // Configurar estado
+            val (statusText, backgroundRes) = getStatusInfo(currentRequest.status)
+            tvStatus.text = statusText
+            tvStatus.setBackgroundResource(backgroundRes)
+
+            // Mostrar/ocultar botones según estado
+            if (currentRequest.status == "PENDING") {
+                btnUpdate.visibility = android.view.View.VISIBLE
+            } else {
+                btnUpdate.visibility = android.view.View.GONE
+            }
+        }
+    }
+
+    private fun setupListeners() {
+        binding.btnUpdate.setOnClickListener {
+            openUpdateRequest()
+        }
+
+        binding.btnCall.setOnClickListener {
+            callUser()
+        }
+
+        binding.btnNavigate.setOnClickListener {
+            navigateToLocation()
+        }
+
+        binding.btnMap.setOnClickListener {
+            openMap()
+        }
+    }
+
+    private fun openUpdateRequest() {
+        val intent = Intent(this, UpdateRequestActivity::class.java)
+        intent.putExtra("REQUEST", currentRequest)
+        startActivity(intent)
+    }
+
+    private fun callUser() {
+        currentRequest.userPhone?.let { phone ->
+            val intent = Intent(Intent.ACTION_DIAL).apply {
+                data = Uri.parse("tel:$phone")
+            }
+            startActivity(intent)
+        } ?: run {
+            Toast.makeText(this, "Número de teléfono no disponible", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    private fun navigateToLocation() {
+        currentRequest.latitude?.let { lat ->
+            currentRequest.longitude?.let { lng ->
+                val uri = Uri.parse("google.navigation:q=$lat,$lng")
+                val intent = Intent(Intent.ACTION_VIEW, uri)
+                intent.setPackage("com.google.android.apps.maps")
+                startActivity(intent)
+            }
+        } ?: run {
+            Toast.makeText(this, "Ubicación no disponible", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    private fun openMap() {
+        currentRequest.latitude?.let { lat ->
+            currentRequest.longitude?.let { lng ->
+                val uri = Uri.parse("geo:$lat,$lng?q=$lat,$lng(${currentRequest.address})")
+                val intent = Intent(Intent.ACTION_VIEW, uri)
+                startActivity(intent)
+            }
+        } ?: run {
+            Toast.makeText(this, "Ubicación no disponible", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    private fun getStatusInfo(status: String): Pair<String, Int> {
+        return when (status.uppercase()) {
+            "PENDING" -> "PENDIENTE" to R.drawable.bg_status_pending
+            "COLLECTED" -> "RECOLECTADO" to R.drawable.bg_status_collected
+            "SCHEDULED" -> "PROGRAMADO" to R.drawable.bg_status_scheduled
+            "CANCELED" -> "CANCELADO" to R.drawable.bg_status_cancelled
+            else -> status to R.drawable.bg_status_pending
+        }
+    }
+
+    private fun formatDate(dateString: String): String {
+        return try {
+            dateString.substring(0, 10) // YYYY-MM-DD
+        } catch (e: Exception) {
+            dateString
+        }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        // Recargar datos si se actualizó la solicitud
+        setResult(RESULT_OK)
+    }
+}
