@@ -100,7 +100,7 @@
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:layout_marginEnd="4dp"
-                        android:text="Todas"
+                        android:text="Pendientes"
                         android:textSize="12sp"
                         app:strokeColor="@color/green_primary"
                         app:strokeWidth="1dp"/>

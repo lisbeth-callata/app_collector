@@ -33,21 +33,21 @@ class RequestsViewModel(application: Application) : AndroidViewModel(application
     private val apiClient = ApiClient.getInstance(application)
     private val authManager = AuthManager(application)
 
-    // ✅ SIMPLIFICADO: Solo 3 tipos de filtro
+    // Solo 3 tipos de filtro
     enum class FilterType {
-        ALL, MY_ASSIGNMENTS, COLLECTED
+        PENDING, MY_ASSIGNMENTS, COLLECTED
     }
 
-    private var currentFilter: FilterType = FilterType.ALL
+    private var currentFilter: FilterType = FilterType.PENDING
 
-    fun loadRequests(filterType: FilterType = FilterType.ALL) {
+    fun loadRequests(filterType: FilterType = FilterType.PENDING) {
         _isLoading.value = true
         currentFilter = filterType
 
         val collectorService = apiClient.getCollectorService()
 
-        // ✅ CAMBIADO: Usar el nuevo endpoint de solicitudes pendientes
-        collectorService.getAllPendingRequests().enqueue(object : Callback<List<CollectionRequest>> {
+        // Usar el nuevo endpoint de solicitudes pendientes
+        collectorService.getAllRequests().enqueue(object : Callback<List<CollectionRequest>> {
             override fun onResponse(
                 call: Call<List<CollectionRequest>>,
                 response: Response<List<CollectionRequest>>
@@ -58,7 +58,7 @@ class RequestsViewModel(application: Application) : AndroidViewModel(application
                     _allRequests.value = allRequests
                     applyFilter(filterType)
                     _successMessage.value = when (filterType) {
-                        FilterType.ALL -> "Solicitud actualizada"
+                        FilterType.PENDING -> "Solicitudes pendientes cargadas"
                         FilterType.MY_ASSIGNMENTS -> "Mis asignaciones cargadas"
                         FilterType.COLLECTED -> "Solicitudes recolectadas cargadas"
                     }
@@ -80,9 +80,11 @@ class RequestsViewModel(application: Application) : AndroidViewModel(application
         val currentUserId = authManager.getUserId()
 
         val filtered = when (filterType) {
-            FilterType.ALL -> {
-                // Ya vienen ordenadas del servidor por fecha descendente
-                allRequests
+            FilterType.PENDING -> {
+                allRequests.filter { request ->
+                    request.status == "PENDING" &&
+                            request.assignmentStatus == "AVAILABLE"
+                }.sortedByDescending { it.createdAt }
             }
             FilterType.MY_ASSIGNMENTS -> {
                 allRequests.filter { request ->
@@ -93,8 +95,10 @@ class RequestsViewModel(application: Application) : AndroidViewModel(application
             }
             FilterType.COLLECTED -> {
                 allRequests.filter { request ->
-                    request.status == "COLLECTED" || request.assignmentStatus == "COMPLETED"
-                }.sortedByDescending { it.updatedAt }
+                    request.status == "COLLECTED" ||
+                            request.assignmentStatus == "COMPLETED" ||
+                            (request.status == "COLLECTED" && request.assignmentStatus == "COMPLETED")
+                }.sortedByDescending { it.updatedAt ?: it.createdAt }
             }
         }
 
@@ -102,8 +106,8 @@ class RequestsViewModel(application: Application) : AndroidViewModel(application
     }
 
     //  Cargar con filtro específico
-    fun loadAllRequests() {
-        loadRequests(FilterType.ALL)
+    fun loadPendingRequests() {
+        loadRequests(FilterType.PENDING)
     }
 
     fun loadMyAssignments() {
@@ -125,7 +129,6 @@ class RequestsViewModel(application: Application) : AndroidViewModel(application
                 _isLoading.value = false
                 if (response.isSuccessful) {
                     _successMessage.value = "Solicitud actualizada correctamente"
-                    // ✅ FORZAR RECARGA COMPLETA para actualizar la UI
                     loadRequests(currentFilter)
                 } else {
                     _errorMessage.value = when (response.code()) {
@@ -191,7 +194,7 @@ class RequestsViewModel(application: Application) : AndroidViewModel(application
                     // Aplicar filtro actual a los resultados de búsqueda
                     val currentUserId = authManager.getUserId()
                     val filteredResults = when (currentFilter) {
-                        FilterType.ALL -> searchResults
+                        FilterType.PENDING -> searchResults
                         FilterType.MY_ASSIGNMENTS -> searchResults.filter { it.isAssignedTo(currentUserId) && it.assignmentStatus == "PENDING" }
                         FilterType.COLLECTED -> searchResults.filter { it.status == "COLLECTED" || it.assignmentStatus == "COMPLETED" }
                     }
@@ -216,10 +219,15 @@ class RequestsViewModel(application: Application) : AndroidViewModel(application
         val currentUserId = authManager.getUserId()
 
         return mapOf(
-            "total" to requests.size,
-            "myAssignments" to requests.count { it.isAssignedTo(currentUserId) && it.assignmentStatus == "PENDING" },
-            "collected" to requests.count { it.status == "COLLECTED" || it.assignmentStatus == "COMPLETED" },
-            "available" to requests.count { it.status == "PENDING" && it.assignmentStatus == "AVAILABLE" }
+            "pending" to requests.count {
+                it.status == "PENDING" && it.assignmentStatus == "AVAILABLE"
+            },
+            "myAssignments" to requests.count {
+                it.isAssignedTo(currentUserId) && it.assignmentStatus == "PENDING"
+            },
+            "collected" to requests.count {
+                it.status == "COLLECTED" || it.assignmentStatus == "COMPLETED"
+            }
         )
     }
 

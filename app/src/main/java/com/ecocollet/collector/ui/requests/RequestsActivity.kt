@@ -53,7 +53,7 @@ class RequestsActivity : AppCompatActivity() {
 
     private fun updateToolbarTitle() {
         val title = when (viewModel.getCurrentFilter()) {
-            RequestsViewModel.FilterType.ALL -> "Todas las Solicitudes"
+            RequestsViewModel.FilterType.PENDING -> "Solicitudes Pendientes" // ✅ CAMBIADO
             RequestsViewModel.FilterType.MY_ASSIGNMENTS -> "Mis Asignaciones"
             RequestsViewModel.FilterType.COLLECTED -> "Solicitudes Recolectadas"
         }
@@ -220,9 +220,8 @@ class RequestsActivity : AppCompatActivity() {
         binding.layoutEmpty.visibility = View.VISIBLE
         binding.rvRequests.visibility = View.GONE
 
-        // ✅ NUEVO: Mensaje específico por filtro
         val message = when (viewModel.getCurrentFilter()) {
-            RequestsViewModel.FilterType.ALL -> "No hay solicitudes para mostrar"
+            RequestsViewModel.FilterType.PENDING -> "No hay solicitudes pendientes disponibles"
             RequestsViewModel.FilterType.MY_ASSIGNMENTS -> "No tienes asignaciones activas"
             RequestsViewModel.FilterType.COLLECTED -> "No hay solicitudes recolectadas"
         }
@@ -238,10 +237,8 @@ class RequestsActivity : AppCompatActivity() {
         binding.swipeRefreshLayout.setOnRefreshListener {
             loadRequests()
         }
-
-        // ✅ SIMPLIFICADO: Solo 3 filtros
         binding.btnFilterAll.setOnClickListener {
-            viewModel.loadAllRequests()
+            viewModel.loadPendingRequests()
         }
 
         binding.btnFilterMyAssignments.setOnClickListener {
@@ -258,7 +255,7 @@ class RequestsActivity : AppCompatActivity() {
     }
 
     private fun loadRequests() {
-        viewModel.loadAllRequests()
+        viewModel.loadPendingRequests()
     }
 
     private fun showError(message: String) {

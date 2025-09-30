@@ -179,9 +179,7 @@ class RouteMapActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMa
         } else {
             requestLocationPermission()
         }
-
-        // ✅ CORREGIDO: Usar loadAllRequests() en lugar de loadTodayRequests()
-        viewModel.loadAllRequests()
+        viewModel.loadPendingRequests()
     }
 
     private fun requestLocationPermission() {
@@ -423,7 +421,6 @@ class RouteMapActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMa
 
     override fun onResume() {
         super.onResume()
-        // ✅ CORREGIDO: Usar loadAllRequests() en lugar de loadTodayRequests()
-        viewModel.loadAllRequests()
+        viewModel.loadPendingRequests()
     }
 }
