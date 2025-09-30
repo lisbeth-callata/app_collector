@@ -9,6 +9,7 @@ import com.ecocollet.collector.model.CollectionRequest
 import com.ecocollet.collector.R
 import com.ecocollet.collector.databinding.ActivityRequestDetailBinding
 import com.ecocollet.collector.ui.map.InternalMapActivity
+import com.ecocollet.collector.ui.map.NavigationActivity
 
 class RequestDetailActivity : AppCompatActivity() {
 
@@ -108,24 +109,11 @@ class RequestDetailActivity : AppCompatActivity() {
     private fun navigateToLocationInternal() {
         currentRequest.latitude?.let { lat ->
             currentRequest.longitude?.let { lng ->
-                // COMENTA TEMPORALMENTE ESTAS LÍNEAS:
-                /*
                 val intent = Intent(this, NavigationActivity::class.java).apply {
-                    putExtra("DESTINATION_LAT", lat)
-                    putExtra("DESTINATION_LNG", lng)
-                    putExtra("DESTINATION_NAME", currentRequest.address ?: "Destino")
-                    putExtra("REQUEST_CODE", currentRequest.code)
-                }
-                startActivity(intent)
-                */
-
-                // EN SU LUGAR, USA EL MAPA INTERNO POR AHORA:
-                val intent = Intent(this, InternalMapActivity::class.java).apply {
                     putExtra("LATITUDE", lat)
                     putExtra("LONGITUDE", lng)
                     putExtra("ADDRESS", currentRequest.address)
                     putExtra("REQUEST_CODE", currentRequest.code)
-                    putExtra("TITLE", "Navegar a: ${currentRequest.getSafeUserName()}")
                 }
                 startActivity(intent)
             }
@@ -133,8 +121,6 @@ class RequestDetailActivity : AppCompatActivity() {
             Toast.makeText(this, "Ubicación no disponible para navegación", Toast.LENGTH_SHORT).show()
         }
     }
-
-
 
     private fun openUpdateRequest() {
         val intent = Intent(this, UpdateRequestActivity::class.java)
@@ -152,6 +138,7 @@ class RequestDetailActivity : AppCompatActivity() {
             Toast.makeText(this, "Número de teléfono no disponible", Toast.LENGTH_SHORT).show()
         }
     }
+
     private fun getStatusInfo(status: String): Pair<String, Int> {
         return when (status.uppercase()) {
             "PENDING" -> "PENDIENTE" to R.drawable.bg_status_pending
@@ -172,7 +159,6 @@ class RequestDetailActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
-        // Recargar datos si se actualizó la solicitud
         setResult(RESULT_OK)
     }
 }

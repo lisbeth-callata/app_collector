@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@color/light_green_background"
+    android:padding="24dp"
+    android:gravity="center">
+
+    <com.google.android.material.appbar.MaterialToolbar
+        android:id="@+id/toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize"
+        app:navigationIcon="@drawable/ic_arrow_back"
+        app:title="Navegación"
+        app:titleTextColor="@color/white" />
+
+    <com.google.android.material.card.MaterialCardView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:cardCornerRadius="16dp"
+        app:cardElevation="8dp"
+        android:layout_marginTop="32dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="32dp"
+            android:gravity="center">
+
+            <!-- Icono de navegación -->
+            <ImageView
+                android:layout_width="80dp"
+                android:layout_height="80dp"
+                android:src="@drawable/ic_navigation"
+                android:layout_marginBottom="24dp"
+                app:tint="@color/green_primary" />
+
+            <!-- Información del destino -->
+            <TextView
+                android:id="@+id/tvRequestCode"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Código: ECO-123456"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:textColor="@color/green_primary"
+                android:gravity="center"
+                android:layout_marginBottom="8dp"/>
+
+            <TextView
+                android:id="@+id/tvDestination"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Destino..."
+                android:textSize="16sp"
+                android:gravity="center"
+                android:layout_marginBottom="16dp"/>
+
+            <!-- Estado -->
+            <TextView
+                android:id="@+id/tvStatus"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Iniciando navegación..."
+                android:textSize="14sp"
+                android:textColor="@color/gray_secondary"
+                android:gravity="center"
+                android:layout_marginBottom="24dp"/>
+
+            <!-- Coordenadas -->
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Google Maps se abrirá automáticamente"
+                android:textSize="12sp"
+                android:textColor="@color/gray_secondary"
+                android:gravity="center"/>
+
+        </LinearLayout>
+    </com.google.android.material.card.MaterialCardView>
+
+    <!-- Información adicional -->
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="La navegación con voz y turn-by-turn se activará en Google Maps"
+        android:textSize="12sp"
+        android:textColor="@color/gray_secondary"
+        android:gravity="center"
+        android:layout_marginTop="16dp"/>
+
+</LinearLayout>

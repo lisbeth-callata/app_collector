@@ -20,6 +20,7 @@ import com.google.android.material.snackbar.Snackbar
 import android.text.TextWatcher
 import android.widget.EditText
 import com.ecocollet.collector.ui.map.InternalMapActivity
+import com.ecocollet.collector.ui.map.NavigationActivity
 
 class RequestsActivity : AppCompatActivity() {
 
@@ -318,10 +319,10 @@ class RequestsActivity : AppCompatActivity() {
         if (request.isAssignedTo(authManager.getUserId())) {
             request.latitude?.let { lat ->
                 request.longitude?.let { lng ->
-                    val intent = Intent(this, InternalMapActivity::class.java).apply {
-                        putExtra("DESTINATION_LAT", lat)
-                        putExtra("DESTINATION_LNG", lng)
-                        putExtra("DESTINATION_NAME", request.address ?: "Destino")
+                    val intent = Intent(this, NavigationActivity::class.java).apply {
+                        putExtra("LATITUDE", lat)
+                        putExtra("LONGITUDE", lng)
+                        putExtra("ADDRESS", request.address)
                         putExtra("REQUEST_CODE", request.code)
                     }
                     startActivity(intent)

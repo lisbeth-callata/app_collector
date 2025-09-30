@@ -51,6 +51,7 @@
         <activity android:name=".ui.map.RouteMapActivity" />
         <activity android:name=".ui.profile.ProfileActivity" />
         <activity android:name=".ui.map.InternalMapActivity" />
+        <activity android:name=".ui.map.NavigationActivity" />
     </application>
     <queries>
         <intent>

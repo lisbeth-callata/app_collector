@@ -11,6 +11,8 @@ import java.util.concurrent.TimeUnit
 class ApiClient(private val context: Context) {
 
     companion object {
+
+        private const val DIRECTIONS_BASE_URL = "https://maps.googleapis.com/"
         private const val BASE_URL = "https://ec-backend-drg8.onrender.com/api/"
         private var instance: ApiClient? = null
 
@@ -19,6 +21,13 @@ class ApiClient(private val context: Context) {
                 instance ?: ApiClient(context.applicationContext).also { instance = it }
             }
         }
+    }
+    private val directionsRetrofit: Retrofit by lazy {
+        Retrofit.Builder()
+            .baseUrl(DIRECTIONS_BASE_URL)
+            .client(okHttpClient)
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
     }
 
     private val authManager by lazy { AuthManager(context) }
@@ -62,4 +71,7 @@ class ApiClient(private val context: Context) {
     fun getCollectorService(): CollectorService = retrofit.create(CollectorService::class.java)
     fun getAssignmentService(): AssignmentService = retrofit.create(AssignmentService::class.java)
     fun getRealTimeService(): RealTimeService = retrofit.create(RealTimeService::class.java)
+
+    fun getDirectionsService(): DirectionsService = directionsRetrofit.create(DirectionsService::class.java)
+
 }
