@@ -19,6 +19,7 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.Snackbar
 import android.text.TextWatcher
 import android.widget.EditText
+import com.ecocollet.collector.ui.map.InternalMapActivity
 
 class RequestsActivity : AppCompatActivity() {
 
@@ -290,9 +291,46 @@ class RequestsActivity : AppCompatActivity() {
     private fun handleRequestAction(request: CollectionRequest, action: RequestAction) {
         when (action) {
             RequestAction.UPDATE -> openUpdateRequest(request)
-            RequestAction.VIEW_MAP -> openMap(request)
+            RequestAction.VIEW_MAP -> openMapInternal(request)
             RequestAction.CALL -> callUser(request)
-            RequestAction.NAVIGATE -> navigateTo(request)
+            RequestAction.NAVIGATE -> navigateToInternal(request)
+        }
+    }
+
+    private fun openMapInternal(request: CollectionRequest) {
+        request.latitude?.let { lat ->
+            request.longitude?.let { lng ->
+                val intent = Intent(this, InternalMapActivity::class.java).apply {
+                    putExtra("LATITUDE", lat)
+                    putExtra("LONGITUDE", lng)
+                    putExtra("ADDRESS", request.address)
+                    putExtra("REQUEST_CODE", request.code)
+                    putExtra("TITLE", "Solicitud ${request.code}")
+                }
+                startActivity(intent)
+            }
+        } ?: run {
+            Toast.makeText(this, "Ubicación no disponible", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    private fun navigateToInternal(request: CollectionRequest) {
+        if (request.isAssignedTo(authManager.getUserId())) {
+            request.latitude?.let { lat ->
+                request.longitude?.let { lng ->
+                    val intent = Intent(this, InternalMapActivity::class.java).apply {
+                        putExtra("DESTINATION_LAT", lat)
+                        putExtra("DESTINATION_LNG", lng)
+                        putExtra("DESTINATION_NAME", request.address ?: "Destino")
+                        putExtra("REQUEST_CODE", request.code)
+                    }
+                    startActivity(intent)
+                }
+            } ?: run {
+                Toast.makeText(this, "Ubicación no disponible para navegación", Toast.LENGTH_SHORT).show()
+            }
+        } else {
+            Toast.makeText(this, "Solo puede navegar a solicitudes asignadas a usted", Toast.LENGTH_SHORT).show()
         }
     }
 

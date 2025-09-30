@@ -8,6 +8,7 @@ import androidx.appcompat.app.AppCompatActivity
 import com.ecocollet.collector.model.CollectionRequest
 import com.ecocollet.collector.R
 import com.ecocollet.collector.databinding.ActivityRequestDetailBinding
+import com.ecocollet.collector.ui.map.InternalMapActivity
 
 class RequestDetailActivity : AppCompatActivity() {
 
@@ -79,13 +80,61 @@ class RequestDetailActivity : AppCompatActivity() {
         }
 
         binding.btnNavigate.setOnClickListener {
-            navigateToLocation()
+            navigateToLocationInternal()
         }
 
         binding.btnMap.setOnClickListener {
-            openMap()
+            openMapInternal()
         }
     }
+
+    private fun openMapInternal() {
+        currentRequest.latitude?.let { lat ->
+            currentRequest.longitude?.let { lng ->
+                val intent = Intent(this, InternalMapActivity::class.java).apply {
+                    putExtra("LATITUDE", lat)
+                    putExtra("LONGITUDE", lng)
+                    putExtra("ADDRESS", currentRequest.address)
+                    putExtra("REQUEST_CODE", currentRequest.code)
+                    putExtra("TITLE", "Ubicación de ${currentRequest.getSafeUserName()}")
+                }
+                startActivity(intent)
+            }
+        } ?: run {
+            Toast.makeText(this, "Ubicación no disponible", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    private fun navigateToLocationInternal() {
+        currentRequest.latitude?.let { lat ->
+            currentRequest.longitude?.let { lng ->
+                // COMENTA TEMPORALMENTE ESTAS LÍNEAS:
+                /*
+                val intent = Intent(this, NavigationActivity::class.java).apply {
+                    putExtra("DESTINATION_LAT", lat)
+                    putExtra("DESTINATION_LNG", lng)
+                    putExtra("DESTINATION_NAME", currentRequest.address ?: "Destino")
+                    putExtra("REQUEST_CODE", currentRequest.code)
+                }
+                startActivity(intent)
+                */
+
+                // EN SU LUGAR, USA EL MAPA INTERNO POR AHORA:
+                val intent = Intent(this, InternalMapActivity::class.java).apply {
+                    putExtra("LATITUDE", lat)
+                    putExtra("LONGITUDE", lng)
+                    putExtra("ADDRESS", currentRequest.address)
+                    putExtra("REQUEST_CODE", currentRequest.code)
+                    putExtra("TITLE", "Navegar a: ${currentRequest.getSafeUserName()}")
+                }
+                startActivity(intent)
+            }
+        } ?: run {
+            Toast.makeText(this, "Ubicación no disponible para navegación", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+
 
     private fun openUpdateRequest() {
         val intent = Intent(this, UpdateRequestActivity::class.java)
@@ -103,32 +152,6 @@ class RequestDetailActivity : AppCompatActivity() {
             Toast.makeText(this, "Número de teléfono no disponible", Toast.LENGTH_SHORT).show()
         }
     }
-
-    private fun navigateToLocation() {
-        currentRequest.latitude?.let { lat ->
-            currentRequest.longitude?.let { lng ->
-                val uri = Uri.parse("google.navigation:q=$lat,$lng")
-                val intent = Intent(Intent.ACTION_VIEW, uri)
-                intent.setPackage("com.google.android.apps.maps")
-                startActivity(intent)
-            }
-        } ?: run {
-            Toast.makeText(this, "Ubicación no disponible", Toast.LENGTH_SHORT).show()
-        }
-    }
-
-    private fun openMap() {
-        currentRequest.latitude?.let { lat ->
-            currentRequest.longitude?.let { lng ->
-                val uri = Uri.parse("geo:$lat,$lng?q=$lat,$lng(${currentRequest.address})")
-                val intent = Intent(Intent.ACTION_VIEW, uri)
-                startActivity(intent)
-            }
-        } ?: run {
-            Toast.makeText(this, "Ubicación no disponible", Toast.LENGTH_SHORT).show()
-        }
-    }
-
     private fun getStatusInfo(status: String): Pair<String, Int> {
         return when (status.uppercase()) {
             "PENDING" -> "PENDIENTE" to R.drawable.bg_status_pending

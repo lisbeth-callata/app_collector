@@ -50,6 +50,7 @@
         <activity android:name=".ui.requests.UpdateRequestActivity" />
         <activity android:name=".ui.map.RouteMapActivity" />
         <activity android:name=".ui.profile.ProfileActivity" />
+        <activity android:name=".ui.map.InternalMapActivity" />
     </application>
     <queries>
         <intent>
