@@ -166,11 +166,15 @@ class RequestsActivity : AppCompatActivity() {
             println("DEBUG - Activity observando ${requests.size} solicitudes")
             adapter.updateRequests(requests)
             updateUI(requests)
+            binding.swipeRefreshLayout.isRefreshing = false
+        }
+
+        viewModel.isRefreshing.observe(this) { isRefreshing ->
+            binding.swipeRefreshLayout.isRefreshing = isRefreshing
         }
 
         viewModel.isLoading.observe(this) { isLoading ->
-            println("DEBUG - Loading: $isLoading")
-            binding.swipeRefreshLayout.isRefreshing = isLoading
+            binding.progressBar.visibility = if (isLoading) View.VISIBLE else View.GONE
         }
 
         viewModel.errorMessage.observe(this) { error ->
@@ -235,7 +239,7 @@ class RequestsActivity : AppCompatActivity() {
 
     private fun setupListeners() {
         binding.swipeRefreshLayout.setOnRefreshListener {
-            loadRequests()
+            reloadCurrentFilter()
         }
         binding.btnFilterAll.setOnClickListener {
             viewModel.loadPendingRequests()
@@ -250,12 +254,19 @@ class RequestsActivity : AppCompatActivity() {
         }
 
         binding.btnRetry.setOnClickListener {
-            loadRequests()
+            reloadCurrentFilter()
         }
     }
 
+    private fun reloadCurrentFilter() {
+        val currentFilter = viewModel.getCurrentFilter()
+        println("DEBUG - Recargando filtro actual: $currentFilter")
+
+        viewModel.refreshCurrentFilter()
+    }
+
     private fun loadRequests() {
-        viewModel.loadPendingRequests()
+        reloadCurrentFilter()
     }
 
     private fun showError(message: String) {
@@ -351,7 +362,7 @@ class RequestsActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
-        println("DEBUG - RequestsActivity onResume - Recargando datos")
-        viewModel.loadRequests(viewModel.getCurrentFilter())
+        println("DEBUG - RequestsActivity onResume - Recargando filtro actual")
+        reloadCurrentFilter()
     }
 }

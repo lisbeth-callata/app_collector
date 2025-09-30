@@ -40,19 +40,20 @@ class RequestsViewModel(application: Application) : AndroidViewModel(application
 
     private var currentFilter: FilterType = FilterType.PENDING
 
+    private val _isRefreshing = MutableLiveData<Boolean>()
+    val isRefreshing: LiveData<Boolean> = _isRefreshing
     fun loadRequests(filterType: FilterType = FilterType.PENDING) {
         _isLoading.value = true
         currentFilter = filterType
 
         val collectorService = apiClient.getCollectorService()
-
-        // Usar el nuevo endpoint de solicitudes pendientes
         collectorService.getAllRequests().enqueue(object : Callback<List<CollectionRequest>> {
             override fun onResponse(
                 call: Call<List<CollectionRequest>>,
                 response: Response<List<CollectionRequest>>
             ) {
                 _isLoading.value = false
+                _isRefreshing.value = false
                 if (response.isSuccessful) {
                     val allRequests = response.body() ?: emptyList()
                     _allRequests.value = allRequests
@@ -69,6 +70,7 @@ class RequestsViewModel(application: Application) : AndroidViewModel(application
 
             override fun onFailure(call: Call<List<CollectionRequest>>, t: Throwable) {
                 _isLoading.value = false
+                _isRefreshing.value = false
                 _errorMessage.value = "Error de conexión: ${t.message}"
             }
         })
@@ -232,5 +234,9 @@ class RequestsViewModel(application: Application) : AndroidViewModel(application
 
     fun getCurrentFilter(): FilterType {
         return currentFilter
+    }
+    fun refreshCurrentFilter() {
+        _isRefreshing.value = true
+        loadRequests(currentFilter)
     }
 }
