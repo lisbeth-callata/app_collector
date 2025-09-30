@@ -231,6 +231,7 @@ class RequestAdapter : RecyclerView.Adapter<RequestAdapter.RequestViewHolder>() 
     override fun getItemCount(): Int = requests.size
 
     fun updateRequests(newRequests: List<CollectionRequest>) {
+        println("DEBUG - Adapter recibiendo ${newRequests.size} solicitudes")
         requests = newRequests
         notifyDataSetChanged()
     }

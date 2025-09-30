@@ -45,7 +45,9 @@ class RequestsViewModel(application: Application) : AndroidViewModel(application
         currentFilter = filterType
 
         val collectorService = apiClient.getCollectorService()
-        collectorService.getTodayRequests().enqueue(object : Callback<List<CollectionRequest>> {
+
+        // ✅ CAMBIADO: Usar el nuevo endpoint de solicitudes pendientes
+        collectorService.getAllPendingRequests().enqueue(object : Callback<List<CollectionRequest>> {
             override fun onResponse(
                 call: Call<List<CollectionRequest>>,
                 response: Response<List<CollectionRequest>>
@@ -56,7 +58,7 @@ class RequestsViewModel(application: Application) : AndroidViewModel(application
                     _allRequests.value = allRequests
                     applyFilter(filterType)
                     _successMessage.value = when (filterType) {
-                        FilterType.ALL -> "Todas las solicitudes cargadas"
+                        FilterType.ALL -> "Todas las solicitudes pendientes cargadas"
                         FilterType.MY_ASSIGNMENTS -> "Mis asignaciones cargadas"
                         FilterType.COLLECTED -> "Solicitudes recolectadas cargadas"
                     }
@@ -79,26 +81,20 @@ class RequestsViewModel(application: Application) : AndroidViewModel(application
 
         val filtered = when (filterType) {
             FilterType.ALL -> {
-                // Priorizar PENDING + AVAILABLE, luego completadas
-                allRequests.sortedWith(compareBy(
-                    { it.status != "PENDING" || it.assignmentStatus != "AVAILABLE" }, // PENDING+AVAILABLE primero
-                    { it.status == "COLLECTED" }, // COLLECTED después
-                    { it.assignmentStatus == "COMPLETED" } // COMPLETED al final
-                ))
+                // Ya vienen ordenadas del servidor por fecha descendente
+                allRequests
             }
             FilterType.MY_ASSIGNMENTS -> {
-                // ✅ CORREGIDO: Solo solicitudes asignadas al usuario actual con estado PENDING en asignación
                 allRequests.filter { request ->
                     request.isAssignedTo(currentUserId) &&
                             (request.assignmentStatus == "PENDING" || request.assignmentStatus == "IN_PROGRESS") &&
-                            request.status == "PENDING" // ✅ AÑADIDO: Solo si el estado del pedido es PENDING
+                            request.status == "PENDING"
                 }
             }
             FilterType.COLLECTED -> {
-                // Solicitudes completadas o recolectadas
                 allRequests.filter { request ->
                     request.status == "COLLECTED" || request.assignmentStatus == "COMPLETED"
-                }.sortedByDescending { it.updatedAt } // Más recientes primero
+                }.sortedByDescending { it.updatedAt }
             }
         }
 

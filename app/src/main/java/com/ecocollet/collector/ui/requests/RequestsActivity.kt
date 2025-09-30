@@ -163,37 +163,19 @@ class RequestsActivity : AppCompatActivity() {
 
     private fun setupObservers() {
         viewModel.requests.observe(this) { requests ->
+            println("DEBUG - Activity observando ${requests.size} solicitudes")
             adapter.updateRequests(requests)
             updateUI(requests)
         }
 
         viewModel.isLoading.observe(this) { isLoading ->
+            println("DEBUG - Loading: $isLoading")
             binding.swipeRefreshLayout.isRefreshing = isLoading
-            binding.progressBar.visibility = if (isLoading) View.VISIBLE else View.GONE
         }
 
         viewModel.errorMessage.observe(this) { error ->
             error?.let {
-                showError(it)
-            }
-        }
-
-        viewModel.successMessage.observe(this) { message ->
-            message?.let {
-                showSuccess(it)
-                updateToolbarTitle()
-            }
-        }
-
-        assignmentViewModel.assignmentResult.observe(this) { result ->
-            result?.let {
-                showSuccess(it.message)
-                loadRequests() // Recargar para ver cambios
-            }
-        }
-
-        assignmentViewModel.errorMessage.observe(this) { error ->
-            error?.let {
+                println("DEBUG - Error: $it")
                 showError(it)
             }
         }

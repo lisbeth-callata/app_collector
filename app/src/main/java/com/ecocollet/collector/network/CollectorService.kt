@@ -34,4 +34,7 @@ interface CollectorService {
 
     @GET("requests/search")
     fun searchRequests(@Query("term") searchTerm: String): Call<List<CollectionRequest>>
+
+    @GET("requests/pending")
+    fun getAllPendingRequests(): Call<List<CollectionRequest>>
 }
