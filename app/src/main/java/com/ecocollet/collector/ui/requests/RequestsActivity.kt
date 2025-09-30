@@ -179,6 +179,30 @@ class RequestsActivity : AppCompatActivity() {
                 showError(it)
             }
         }
+
+        viewModel.successMessage.observe(this) { message ->
+            message?.let {
+                println("DEBUG - Success: $it")
+                showSuccess(it)
+            }
+        }
+        assignmentViewModel.assignmentResult.observe(this) { result ->
+            result?.let {
+                println("DEBUG - Asignación completada: ${result.message}")
+                showSuccess(result.message)
+                viewModel.loadRequests(viewModel.getCurrentFilter())
+                assignmentViewModel.clearAssignmentResult()
+            }
+        }
+
+        assignmentViewModel.errorMessage.observe(this) { error ->
+            error?.let {
+                println("DEBUG - Error en asignación: $it")
+                showError(it)
+                viewModel.loadRequests(viewModel.getCurrentFilter())
+                assignmentViewModel.clearErrorMessage()
+            }
+        }
     }
 
     private fun updateUI(requests: List<CollectionRequest>) {

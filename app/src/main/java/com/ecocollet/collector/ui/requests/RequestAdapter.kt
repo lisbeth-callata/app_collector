@@ -20,7 +20,7 @@ class RequestAdapter : RecyclerView.Adapter<RequestAdapter.RequestViewHolder>() 
     var onAssignmentClick: ((CollectionRequest, AssignmentAction) -> Unit)? = null
     var onCompleteWithWeight: ((CollectionRequest) -> Unit)? = null // Callback para completar con peso
 
-    private var requests: List<CollectionRequest> = emptyList()
+    private var requests: MutableList<CollectionRequest> = mutableListOf()
     private lateinit var authManager: AuthManager
 
     fun setAuthManager(authManager: AuthManager) {
@@ -230,11 +230,25 @@ class RequestAdapter : RecyclerView.Adapter<RequestAdapter.RequestViewHolder>() 
 
     override fun getItemCount(): Int = requests.size
 
+    fun updateRequest(updatedRequest: CollectionRequest) {
+        val position = requests.indexOfFirst { it.id == updatedRequest.id }
+        if (position != -1) {
+            // ✅ CORREGIDO: Ahora funciona porque requests es MutableList
+            requests[position] = updatedRequest
+            notifyItemChanged(position)
+            println("DEBUG - Adapter actualizado en posición: $position")
+        } else {
+            println("DEBUG - Solicitud no encontrada para actualizar: ${updatedRequest.id}")
+        }
+    }
+
     fun updateRequests(newRequests: List<CollectionRequest>) {
         println("DEBUG - Adapter recibiendo ${newRequests.size} solicitudes")
-        requests = newRequests
+        // ✅ CORREGIDO: Convertir a MutableList
+        requests = newRequests.toMutableList()
         notifyDataSetChanged()
     }
+
 }
 
 enum class RequestAction {

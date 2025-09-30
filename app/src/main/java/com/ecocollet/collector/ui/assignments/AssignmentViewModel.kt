@@ -32,6 +32,8 @@ class AssignmentViewModel(application: Application) : AndroidViewModel(applicati
 
     fun claimRequest(requestId: Long, collectorName: String, timeoutMinutes: Int = 15) {
         _isLoading.value = true
+        _assignmentResult.value = null // ✅ Limpiar resultado anterior
+        _errorMessage.value = null // ✅ Limpiar error anterior
 
         val collectorId = authManager.getUserId()
         if (collectorId == -1L) {
@@ -67,6 +69,9 @@ class AssignmentViewModel(application: Application) : AndroidViewModel(applicati
 
     fun releaseRequest(requestId: Long) {
         _isLoading.value = true
+        _assignmentResult.value = null
+        _errorMessage.value = null
+
         val assignmentService = apiClient.getAssignmentService()
 
         assignmentService.releaseRequest(requestId).enqueue(object : Callback<AssignmentResponse> {
@@ -88,6 +93,9 @@ class AssignmentViewModel(application: Application) : AndroidViewModel(applicati
 
     fun completeRequest(requestId: Long) {
         _isLoading.value = true
+        _assignmentResult.value = null
+        _errorMessage.value = null
+
         val assignmentService = apiClient.getAssignmentService()
 
         assignmentService.completeRequest(requestId).enqueue(object : Callback<AssignmentResponse> {
@@ -133,5 +141,12 @@ class AssignmentViewModel(application: Application) : AndroidViewModel(applicati
                 _errorMessage.value = "Error de conexión: ${t.message}"
             }
         })
+    }
+    fun clearAssignmentResult() {
+        _assignmentResult.value = null
+    }
+
+    fun clearErrorMessage() {
+        _errorMessage.value = null
     }
 }

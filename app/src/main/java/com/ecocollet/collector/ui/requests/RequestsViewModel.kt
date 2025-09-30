@@ -58,7 +58,7 @@ class RequestsViewModel(application: Application) : AndroidViewModel(application
                     _allRequests.value = allRequests
                     applyFilter(filterType)
                     _successMessage.value = when (filterType) {
-                        FilterType.ALL -> "Todas las solicitudes pendientes cargadas"
+                        FilterType.ALL -> "Solicitud actualizada"
                         FilterType.MY_ASSIGNMENTS -> "Mis asignaciones cargadas"
                         FilterType.COLLECTED -> "Solicitudes recolectadas cargadas"
                     }
