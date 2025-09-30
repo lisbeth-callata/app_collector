@@ -95,9 +95,8 @@ class RequestsViewModel(application: Application) : AndroidViewModel(application
             }
             FilterType.COLLECTED -> {
                 allRequests.filter { request ->
-                    request.status == "COLLECTED" ||
-                            request.assignmentStatus == "COMPLETED" ||
-                            (request.status == "COLLECTED" && request.assignmentStatus == "COMPLETED")
+                    (request.status == "COLLECTED" || request.assignmentStatus == "COMPLETED") &&
+                            request.status != "CANCELLED" // ← Excluir canceladas
                 }.sortedByDescending { it.updatedAt ?: it.createdAt }
             }
         }

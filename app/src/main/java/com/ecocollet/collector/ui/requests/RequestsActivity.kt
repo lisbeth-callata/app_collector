@@ -351,6 +351,7 @@ class RequestsActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
-        loadRequests()
+        println("DEBUG - RequestsActivity onResume - Recargando datos")
+        viewModel.loadRequests(viewModel.getCurrentFilter())
     }
 }
