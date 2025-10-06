@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="16dp">
+
+    <TextView
+        android:id="@+id/tvFullAddress"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Dirección completa..."
+        android:textSize="14sp"
+        android:layout_marginBottom="16dp"
+        android:lineSpacingMultiplier="1.2"
+        android:background="@color/light_blue_background"
+        android:padding="12dp"
+        android:textStyle="bold"/>
+
+    <LinearLayout
+        android:id="@+id/sectionReference"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginBottom="12dp"
+        android:visibility="gone">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="📍 Referencia:"
+            android:textStyle="bold"
+            android:textSize="12sp"/>
+
+        <TextView
+            android:id="@+id/tvReference"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Referencia..."
+            android:textSize="12sp"
+            android:layout_marginStart="8dp"/>
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/sectionDistrict"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginBottom="12dp"
+        android:visibility="gone">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="🏛️ Ubicación:"
+            android:textStyle="bold"
+            android:textSize="12sp"/>
+
+        <TextView
+            android:id="@+id/tvDistrict"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Distrito, Provincia, Región"
+            android:textSize="12sp"
+            android:layout_marginStart="8dp"/>
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/tvCoordinates"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Coordenadas..."
+        android:textSize="11sp"
+        android:textColor="@color/gray_secondary"
+        android:gravity="center"
+        android:layout_marginTop="8dp"/>
+
+</LinearLayout>

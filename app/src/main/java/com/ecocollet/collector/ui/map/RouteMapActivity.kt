@@ -297,8 +297,7 @@ class RouteMapActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMa
             tvPopupCode.text = request.code
             tvPopupUser.text = request.userName
             tvPopupMaterial.text = request.material
-            tvPopupAddress.text = request.address ?: "Dirección no disponible"
-
+            tvPopupAddress.text = request.getFullAddress()
             // Configurar estado con color correspondiente
             val (statusText, backgroundRes) = getStatusInfo(request.status)
             tvPopupStatus.text = statusText

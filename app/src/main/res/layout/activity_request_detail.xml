@@ -128,7 +128,7 @@
                         android:textSize="14sp"/>
                 </LinearLayout>
 
-                <!-- Ubicación y Fecha -->
+                <!-- Dirección Principal -->
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -138,7 +138,7 @@
                     <TextView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="Ubicación y Fecha"
+                        android:text="Dirección Principal"
                         android:textSize="16sp"
                         android:textStyle="bold"
                         android:textColor="@color/green_dark"
@@ -148,39 +148,177 @@
                         android:id="@+id/tvAddress"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="Dirección"
+                        android:text="Dirección completa aquí"
                         android:textSize="14sp"
-                        android:layout_marginBottom="4dp"/>
-
-                    <TextView
-                        android:id="@+id/tvCreatedAt"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:text="Fecha de creación"
-                        android:textSize="14sp"/>
+                        android:lineSpacingMultiplier="1.2"/>
                 </LinearLayout>
 
-                <!-- Peso -->
+                <!-- Sección de Ubicación Detallada (NUEVA) -->
+                <LinearLayout
+                    android:id="@+id/layoutLocationDetails"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:layout_marginBottom="16dp"
+                    android:background="@drawable/bg_location_details"
+                    android:padding="12dp"
+                    android:visibility="gone">
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="📍 Detalles de Ubicación"
+                        android:textSize="14sp"
+                        android:textStyle="bold"
+                        android:textColor="@color/green_primary"
+                        android:layout_marginBottom="8dp"/>
+
+                    <!-- Dirección Específica del Usuario -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:layout_marginBottom="8dp">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Casa/Edificio:"
+                            android:textStyle="bold"
+                            android:textSize="12sp"/>
+
+                        <TextView
+                            android:id="@+id/tvAddressUser"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="No especificada"
+                            android:textSize="12sp"
+                            android:layout_marginStart="8dp"/>
+                    </LinearLayout>
+
+                    <!-- Referencia -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:layout_marginBottom="8dp">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Referencia:"
+                            android:textStyle="bold"
+                            android:textSize="12sp"/>
+
+                        <TextView
+                            android:id="@+id/tvReference"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="Sin referencia"
+                            android:textSize="12sp"
+                            android:layout_marginStart="8dp"/>
+                    </LinearLayout>
+
+                    <!-- Ubicación Administrativa -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:layout_marginBottom="8dp">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Zona:"
+                            android:textStyle="bold"
+                            android:textSize="12sp"/>
+
+                        <TextView
+                            android:id="@+id/tvAdministrativeArea"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="No disponible"
+                            android:textSize="12sp"
+                            android:layout_marginStart="8dp"/>
+                    </LinearLayout>
+
+                    <!-- Coordenadas -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Coordenadas:"
+                            android:textStyle="bold"
+                            android:textSize="12sp"/>
+
+                        <TextView
+                            android:id="@+id/tvCoordinates"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="No disponibles"
+                            android:textSize="12sp"
+                            android:layout_marginStart="8dp"/>
+                    </LinearLayout>
+
+                </LinearLayout>
+
+                <!-- Fecha y Peso -->
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="vertical">
+                    android:orientation="horizontal"
+                    android:layout_marginBottom="12dp">
 
-                    <TextView
-                        android:layout_width="match_parent"
+                    <LinearLayout
+                        android:layout_width="0dp"
                         android:layout_height="wrap_content"
-                        android:text="Peso"
-                        android:textSize="16sp"
-                        android:textStyle="bold"
-                        android:textColor="@color/green_dark"
-                        android:layout_marginBottom="8dp"/>
+                        android:layout_weight="1"
+                        android:orientation="vertical">
 
-                    <TextView
-                        android:id="@+id/tvWeight"
-                        android:layout_width="match_parent"
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Fecha de creación:"
+                            android:textStyle="bold"
+                            android:textSize="12sp"/>
+
+                        <TextView
+                            android:id="@+id/tvCreatedAt"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="2023-01-01"
+                            android:textSize="12sp"/>
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="0dp"
                         android:layout_height="wrap_content"
-                        android:text="Peso"
-                        android:textSize="14sp"/>
+                        android:layout_weight="1"
+                        android:orientation="vertical"
+                        android:gravity="end">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Peso:"
+                            android:textStyle="bold"
+                            android:textSize="12sp"/>
+
+                        <TextView
+                            android:id="@+id/tvWeight"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Pendiente"
+                            android:textSize="12sp"/>
+                    </LinearLayout>
                 </LinearLayout>
 
             </LinearLayout>

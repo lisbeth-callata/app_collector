@@ -64,7 +64,7 @@ class NavigationActivity : AppCompatActivity() {
                 startActivity(mapIntent)
                 // Cerrar esta actividad después de abrir Maps
                 finish()
-            } else {
+            } else {    
                 // Fallback: abrir en navegador web
                 binding.tvStatus.text = "Google Maps no instalado. Abriendo en navegador..."
                 openInWebBrowser()

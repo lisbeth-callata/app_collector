@@ -10,7 +10,7 @@ import com.ecocollet.collector.R
 import com.ecocollet.collector.databinding.ActivityRequestDetailBinding
 import com.ecocollet.collector.ui.map.InternalMapActivity
 import com.ecocollet.collector.ui.map.NavigationActivity
-
+import android.view.View
 class RequestDetailActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityRequestDetailBinding
@@ -48,7 +48,7 @@ class RequestDetailActivity : AppCompatActivity() {
             tvUserPhone.text = currentRequest.userPhone ?: "No disponible"
             tvMaterial.text = currentRequest.material
             tvDescription.text = currentRequest.description ?: "Sin descripción"
-            tvAddress.text = currentRequest.address ?: "No especificada"
+            tvAddress.text = currentRequest.getFullAddress()
             tvCreatedAt.text = formatDate(currentRequest.createdAt)
 
             tvWeight.text = if (currentRequest.weight != null) {
@@ -68,9 +68,41 @@ class RequestDetailActivity : AppCompatActivity() {
             } else {
                 btnUpdate.visibility = android.view.View.GONE
             }
+            setupLocationDetails()
         }
     }
 
+    private fun setupLocationDetails() {
+        val hasLocationDetails = currentRequest.hasCompleteLocationInfo()
+
+        if (hasLocationDetails) {
+            binding.layoutLocationDetails.visibility = View.VISIBLE
+
+            with(binding) {
+                tvAddressUser.text = currentRequest.addressUser ?: "No especificada"
+
+                tvReference.text = currentRequest.reference ?: "Sin referencia"
+
+                val locationParts = listOfNotNull(
+                    currentRequest.district,
+                    currentRequest.province,
+                    currentRequest.region
+                )
+                tvAdministrativeArea.text = if (locationParts.isNotEmpty()) {
+                    locationParts.joinToString(", ")
+                } else {
+                    "No disponible"
+                }
+                if (currentRequest.hasValidLocation()) {
+                    tvCoordinates.text = "Lat: ${"%.6f".format(currentRequest.latitude)}, Lng: ${"%.6f".format(currentRequest.longitude)}"
+                } else {
+                    tvCoordinates.text = "Coordenadas no disponibles"
+                }
+            }
+        } else {
+            binding.layoutLocationDetails.visibility = View.GONE
+        }
+    }
     private fun setupListeners() {
         binding.btnUpdate.setOnClickListener {
             openUpdateRequest()

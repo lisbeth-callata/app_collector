@@ -17,6 +17,11 @@ data class CollectionRequest(
     val latitude: Double? = null,
     val longitude: Double? = null,
     val address: String? = null,
+    val district: String? = null,
+    val province: String? = null,
+    val region: String? = null,
+    val addressUser: String? = null,
+    val reference: String? = null,
     val userId: Long,
 
     // Información completa del usuario
@@ -32,6 +37,67 @@ data class CollectionRequest(
     val assignmentExpiresAt: String? = null
 ) : Parcelable {
 
+    fun getFullAddress(): String {
+        return buildString {
+            // Dirección específica del usuario (más detallada)
+            if (!addressUser.isNullOrEmpty()) {
+                append(addressUser)
+            }
+
+            // Dirección general (backup)
+            if (!address.isNullOrEmpty()) {
+                if (isNotEmpty()) append("\n")
+                append(address)
+            }
+
+            // Referencia/punto de referencia
+            if (!reference.isNullOrEmpty()) {
+                if (isNotEmpty()) append("\n")
+                append("Referencia: $reference")
+            }
+
+            // Ubicación administrativa
+            val locationParts = mutableListOf<String>()
+            if (!district.isNullOrEmpty()) locationParts.add(district)
+            if (!province.isNullOrEmpty()) locationParts.add(province)
+            if (!region.isNullOrEmpty()) locationParts.add(region)
+
+            if (locationParts.isNotEmpty()) {
+                if (isNotEmpty()) append("\n")
+                append(locationParts.joinToString(", "))
+            }
+
+            // Si no hay ninguna dirección, mostrar coordenadas
+            if (isEmpty() && hasValidLocation()) {
+                append("Ubicación: ${"%.6f".format(latitude)}, ${"%.6f".format(longitude)}")
+            }
+
+            // Si todo está vacío
+            if (isEmpty()) {
+                append("Dirección no especificada")
+            }
+        }
+    }
+    fun getShortAddress(): String {
+        return when {
+            !addressUser.isNullOrEmpty() -> {
+                if (addressUser.length > 50) addressUser.take(47) + "..." else addressUser
+            }
+            !address.isNullOrEmpty() -> {
+                if (address.length > 50) address.take(47) + "..." else address
+            }
+            !district.isNullOrEmpty() -> district
+            else -> "Ubicación no disponible"
+        }
+    }
+
+    // ✅ NUEVA FUNCIÓN: Verificar si tiene información de ubicación completa
+    fun hasCompleteLocationInfo(): Boolean {
+        return !addressUser.isNullOrEmpty() ||
+                !address.isNullOrEmpty() ||
+                !district.isNullOrEmpty() ||
+                !reference.isNullOrEmpty()
+    }
     // Validaciones para estados
     fun canBeClaimedBy(collectorId: Long): Boolean {
         return status == "PENDING" &&
@@ -86,7 +152,7 @@ data class CollectionRequest(
     }
 
     fun getSafeAddress(): String {
-        return address ?: "Ubicación no especificada"
+        return getShortAddress()
     }
 
     fun getSafeDescription(): String {

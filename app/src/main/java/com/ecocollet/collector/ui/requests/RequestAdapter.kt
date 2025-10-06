@@ -1,5 +1,7 @@
 package com.ecocollet.collector.ui.requests
 
+import android.content.Intent
+import android.net.Uri
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -12,13 +14,16 @@ import com.ecocollet.collector.utils.AuthManager
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+import kotlin.let
+import android.widget.Toast
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 
 class RequestAdapter : RecyclerView.Adapter<RequestAdapter.RequestViewHolder>() {
 
     var onItemClick: ((CollectionRequest) -> Unit)? = null
     var onActionClick: ((CollectionRequest, RequestAction) -> Unit)? = null
     var onAssignmentClick: ((CollectionRequest, AssignmentAction) -> Unit)? = null
-    var onCompleteWithWeight: ((CollectionRequest) -> Unit)? = null // Callback para completar con peso
+    var onCompleteWithWeight: ((CollectionRequest) -> Unit)? = null
 
     private var requests: MutableList<CollectionRequest> = mutableListOf()
     private lateinit var authManager: AuthManager
@@ -37,7 +42,6 @@ class RequestAdapter : RecyclerView.Adapter<RequestAdapter.RequestViewHolder>() 
         val tvWeight: TextView = itemView.findViewById(R.id.tvWeight)
         val tvAssignmentStatus: TextView = itemView.findViewById(R.id.tvAssignmentStatus)
         val tvAssignedCollector: TextView = itemView.findViewById(R.id.tvAssignedCollector)
-
         val tvUserContact: TextView = itemView.findViewById(R.id.tvUserContact)
         val tvDescription: TextView = itemView.findViewById(R.id.tvDescription)
         val layoutAssignmentButtons: View = itemView.findViewById(R.id.layoutAssignmentButtons)
@@ -59,7 +63,7 @@ class RequestAdapter : RecyclerView.Adapter<RequestAdapter.RequestViewHolder>() 
             tvUserContact.text = request.getSafeUserPhone()
             tvMaterial.text = request.material
             tvDescription.text = request.getSafeDescription()
-            tvAddress.text = request.getSafeAddress()
+            tvAddress.text = request.getShortAddress()
             tvCreatedAt.text = formatDate(request.createdAt)
             tvWeight.text = request.getSafeWeight()
 
@@ -96,6 +100,63 @@ class RequestAdapter : RecyclerView.Adapter<RequestAdapter.RequestViewHolder>() 
 
             // Configurar listeners
             setupClickListeners(request, holder)
+            holder.itemView.setOnClickListener {
+                showLocationDetailsDialog(request, holder.itemView)
+            }
+        }
+    }
+
+    private fun showLocationDetailsDialog(request: CollectionRequest, itemView: View) {
+        val context = itemView.context
+        val dialogView = LayoutInflater.from(context).inflate(R.layout.dialog_location_details, null)
+
+        with(dialogView) {
+            findViewById<TextView>(R.id.tvFullAddress).text = request.getFullAddress()
+            findViewById<TextView>(R.id.tvCoordinates).text =
+                if (request.hasValidLocation())
+                    "Coordenadas: ${"%.6f".format(request.latitude)}, ${"%.6f".format(request.longitude)}"
+                else
+                    "Coordenadas no disponibles"
+
+            // Mostrar/ocultar secciones según disponibilidad
+            val sectionReference = findViewById<View>(R.id.sectionReference)
+            val sectionDistrict = findViewById<View>(R.id.sectionDistrict)
+
+            sectionReference.visibility = if (!request.reference.isNullOrEmpty()) View.VISIBLE else View.GONE
+            sectionDistrict.visibility = if (!request.district.isNullOrEmpty()) View.VISIBLE else View.GONE
+
+            // Llenar datos específicos
+            findViewById<TextView>(R.id.tvReference).text = request.reference ?: "Sin referencia"
+            val locationParts = listOfNotNull(request.district, request.province, request.region)
+            findViewById<TextView>(R.id.tvDistrict).text = if (locationParts.isNotEmpty()) {
+                locationParts.joinToString(", ")
+            } else {
+                "Ubicación no disponible"
+            }
+        }
+
+        MaterialAlertDialogBuilder(context)
+            .setTitle("📍 Ubicación Completa - ${request.code}")
+            .setView(dialogView)
+            .setPositiveButton("Cerrar", null)
+            .setNeutralButton("Abrir en Maps") { _, _ ->
+                openInMaps(request, context)
+            }
+            .show()
+    }
+    private fun openInMaps(request: CollectionRequest, context: android.content.Context) {
+        request.latitude?.let { lat ->
+            request.longitude?.let { lng ->
+                val uri = "geo:$lat,$lng?q=${Uri.encode(request.getFullAddress())}"
+                val intent = Intent(Intent.ACTION_VIEW, Uri.parse(uri))
+                try {
+                    context.startActivity(intent)
+                } catch (e: Exception) {
+                    Toast.makeText(context, "No hay aplicación de mapas instalada", Toast.LENGTH_SHORT).show()
+                }
+            }
+        } ?: run {
+            Toast.makeText(context, "Ubicación no disponible para maps", Toast.LENGTH_SHORT).show()
         }
     }
 
