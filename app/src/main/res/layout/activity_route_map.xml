@@ -310,9 +310,9 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="8dp"
-                    android:text="Solo Pendientes"
+                    android:text="Mis Asignaciones"
                     android:textSize="12sp"
-                    app:strokeColor="@color/orange"
+                    app:strokeColor="@color/blue"
                     app:strokeWidth="1dp" />
 
             </LinearLayout>
@@ -341,6 +341,7 @@
                     android:textSize="14sp"
                     android:layout_marginBottom="8dp"/>
 
+                <!-- Pendiente - NARANJA -->
                 <LinearLayout
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -360,29 +361,12 @@
                         android:textSize="12sp"/>
                 </LinearLayout>
 
+                <!-- Mis Asignaciones - AZUL -->
                 <LinearLayout
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:orientation="horizontal"
                     android:layout_marginBottom="4dp">
-
-                    <View
-                        android:layout_width="12dp"
-                        android:layout_height="12dp"
-                        android:background="@drawable/bg_status_collected"
-                        android:layout_marginEnd="8dp"/>
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Recolectado"
-                        android:textSize="12sp"/>
-                </LinearLayout>
-
-                <LinearLayout
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal">
 
                     <View
                         android:layout_width="12dp"
@@ -393,7 +377,26 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Programado"
+                        android:text="Mis Asignaciones"
+                        android:textSize="12sp"/>
+                </LinearLayout>
+
+                <!-- Recolectada - VERDE -->
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+
+                    <View
+                        android:layout_width="12dp"
+                        android:layout_height="12dp"
+                        android:background="@drawable/bg_status_collected"
+                        android:layout_marginEnd="8dp"/>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Recolectada"
                         android:textSize="12sp"/>
                 </LinearLayout>
 

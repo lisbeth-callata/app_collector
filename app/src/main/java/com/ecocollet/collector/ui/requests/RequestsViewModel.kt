@@ -1,6 +1,7 @@
 package com.ecocollet.collector.ui.requests
 
 import android.app.Application
+import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -59,7 +60,7 @@ class RequestsViewModel(application: Application) : AndroidViewModel(application
                     _allRequests.value = allRequests
                     applyFilter(filterType)
                     _successMessage.value = when (filterType) {
-                        FilterType.PENDING -> "Solicitudes pendientes cargadas"
+                        FilterType.PENDING -> "${allRequests.size} solicitudes cargadas"
                         FilterType.MY_ASSIGNMENTS -> "Mis asignaciones cargadas"
                         FilterType.COLLECTED -> "Solicitudes recolectadas cargadas"
                     }
@@ -85,21 +86,30 @@ class RequestsViewModel(application: Application) : AndroidViewModel(application
             FilterType.PENDING -> {
                 allRequests.filter { request ->
                     request.status == "PENDING" &&
-                            request.assignmentStatus == "AVAILABLE"
+                            request.assignmentStatus == "AVAILABLE" &&
+                            !request.isAssignedTo(currentUserId) // Solo pendientes no asignadas
                 }.sortedByDescending { it.createdAt }
             }
             FilterType.MY_ASSIGNMENTS -> {
+                // ✅ CORREGIDO: Lógica más flexible para "Mis Asignaciones"
                 allRequests.filter { request ->
                     request.isAssignedTo(currentUserId) &&
-                            (request.assignmentStatus == "PENDING" || request.assignmentStatus == "IN_PROGRESS") &&
-                            request.status == "PENDING"
-                }
+                            request.status == "PENDING" // Solo pendientes asignadas a mí
+                }.sortedByDescending { it.assignedAt ?: it.createdAt }
             }
             FilterType.COLLECTED -> {
                 allRequests.filter { request ->
                     (request.status == "COLLECTED" || request.assignmentStatus == "COMPLETED") &&
-                            request.status != "CANCELLED" // ← Excluir canceladas
+                            request.status != "CANCELLED"
                 }.sortedByDescending { it.updatedAt ?: it.createdAt }
+            }
+        }
+
+        // DEBUG: Log para verificar el filtrado
+        Log.d("RequestsViewModel", "Filtro $filterType: ${filtered.size} solicitudes")
+        if (filterType == FilterType.MY_ASSIGNMENTS) {
+            filtered.forEach { request ->
+                Log.d("RequestsViewModel", "Mi asignación: ${request.code} - Status: ${request.status} - Assignment: ${request.assignmentStatus}")
             }
         }
 
@@ -238,5 +248,42 @@ class RequestsViewModel(application: Application) : AndroidViewModel(application
     fun refreshCurrentFilter() {
         _isRefreshing.value = true
         loadRequests(currentFilter)
+    }
+
+    fun loadAllRequestsForMap() {
+        _isLoading.value = true
+
+        val collectorService = apiClient.getCollectorService()
+
+        // ✅ NUEVO MÉTODO: Cargar TODAS las solicitudes para el mapa
+        collectorService.getAllRequests().enqueue(object : Callback<List<CollectionRequest>> {
+            override fun onResponse(
+                call: Call<List<CollectionRequest>>,
+                response: Response<List<CollectionRequest>>
+            ) {
+                _isLoading.value = false
+                _isRefreshing.value = false
+                if (response.isSuccessful) {
+                    val allRequests = response.body() ?: emptyList()
+                    _allRequests.value = allRequests
+                    _filteredRequests.value = allRequests // Mostrar todas sin filtro inicial
+                    _successMessage.value = "${allRequests.size} solicitudes cargadas para el mapa"
+
+                    Log.d("RequestsViewModel", "Todas las solicitudes cargadas: ${allRequests.size}")
+                    // Debug: mostrar cuántas están asignadas al usuario actual
+                    val myAssignments = allRequests.count { it.isAssignedTo(authManager.getUserId()) }
+                    Log.d("RequestsViewModel", "Mis asignaciones: $myAssignments")
+
+                } else {
+                    _errorMessage.value = "Error ${response.code()}: ${response.message()}"
+                }
+            }
+
+            override fun onFailure(call: Call<List<CollectionRequest>>, t: Throwable) {
+                _isLoading.value = false
+                _isRefreshing.value = false
+                _errorMessage.value = "Error de conexión: ${t.message}"
+            }
+        })
     }
 }

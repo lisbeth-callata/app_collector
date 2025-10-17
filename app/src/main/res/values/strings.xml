@@ -1,12 +1,12 @@
 <resources>
     <string name="app_name">EcoCollet Recolector</string>
-    <string name="login_title">Iniciar Sesión Recolector</string>
+    <string name="login_title">Iniciar Sesión</string>
     <string name="hint_email_username">Email o usuario</string>
     <string name="hint_password">Contraseña</string>
     <string name="error_credentials">Credenciales incorrectas</string>
     <string name="error_connection">Error de conexión</string>
     <string name="success_login">Inicio de sesión exitoso</string>
-    <string name="welcome_collector">Bienvenido Recolector</string>
+    <string name="welcome_collector">Bienvenido a EcoCollet</string>
     <string name="collector_description">Gestión de solicitudes de recolección</string>
 
     <!-- Dashboard -->

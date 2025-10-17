@@ -6,6 +6,7 @@ import android.content.pm.PackageManager
 import android.location.Location
 import android.net.Uri
 import android.os.Bundle
+import android.util.Log
 import android.view.View
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
@@ -42,7 +43,7 @@ class RouteMapActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMa
     private lateinit var viewModel: RequestsViewModel
     private lateinit var authManager: AuthManager
     private var markers: MutableMap<Marker, CollectionRequest> = mutableMapOf()
-    private var currentFilter: String? = null
+    private var currentFilter: String = "ALL" // "ALL" o "MY_ASSIGNMENTS"
     private var allRequests: List<CollectionRequest> = emptyList()
     private val LOCATION_PERMISSION_REQUEST_CODE = 1001
 
@@ -75,8 +76,8 @@ class RouteMapActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMa
     private fun setupObservers() {
         viewModel.requests.observe(this) { requests ->
             allRequests = requests
+            Log.d("RouteMapActivity", "Requests cargadas: ${requests.size}")
             if (requests.isNotEmpty()) {
-                displayRequestsOnMap(requests)
                 applyCurrentFilter()
             } else {
                 Toast.makeText(this, "No hay solicitudes para mostrar", Toast.LENGTH_SHORT).show()
@@ -104,13 +105,13 @@ class RouteMapActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMa
         }
 
         binding.btnFilterAll.setOnClickListener {
-            currentFilter = null
+            currentFilter = "ALL"
             applyCurrentFilter()
             updateFilterButtons()
         }
 
         binding.btnFilterPending.setOnClickListener {
-            currentFilter = "PENDING"
+            currentFilter = "MY_ASSIGNMENTS"
             applyCurrentFilter()
             updateFilterButtons()
         }
@@ -125,16 +126,46 @@ class RouteMapActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMa
     }
 
     private fun updateFilterButtons() {
-        binding.btnFilterAll.isSelected = currentFilter == null
-        binding.btnFilterPending.isSelected = currentFilter == "PENDING"
+        binding.btnFilterAll.isSelected = currentFilter == "ALL"
+        binding.btnFilterPending.isSelected = currentFilter == "MY_ASSIGNMENTS"
+
+        // Actualizar textos de los botones para que sean más claros
+        binding.btnFilterAll.text = "Todas"
+        binding.btnFilterPending.text = "Mis Asignaciones"
+
+        // Actualizar colores de los botones
+        val allColor = if (currentFilter == "ALL") R.color.green_primary else R.color.gray_secondary
+        val assignmentsColor = if (currentFilter == "MY_ASSIGNMENTS") R.color.blue else R.color.gray_secondary
+
+        binding.btnFilterAll.setStrokeColorResource(allColor)
+        binding.btnFilterPending.setStrokeColorResource(assignmentsColor)
     }
 
     private fun applyCurrentFilter() {
-        val filteredRequests = if (currentFilter == "PENDING") {
-            allRequests.filter { it.status == "PENDING" }
-        } else {
-            allRequests
+        Log.d("RouteMapActivity", "Aplicando filtro: $currentFilter")
+        Log.d("RouteMapActivity", "Total de solicitudes: ${allRequests.size}")
+
+        val filteredRequests = when (currentFilter) {
+            "MY_ASSIGNMENTS" -> {
+                // ✅ CORREGIDO: Lógica simplificada para "Mis Asignaciones"
+                val myAssignments = allRequests.filter { request ->
+                    val isAssignedToMe = request.isAssignedTo(authManager.getUserId())
+                    val isValidStatus = request.assignmentStatus in listOf("PENDING", "IN_PROGRESS") &&
+                            request.status == "PENDING"
+
+                    Log.d("RouteMapActivity", "Request ${request.code}: isAssignedToMe=$isAssignedToMe, assignmentStatus=${request.assignmentStatus}, status=${request.status}")
+
+                    isAssignedToMe && isValidStatus
+                }
+                Log.d("RouteMapActivity", "Mis asignaciones encontradas: ${myAssignments.size}")
+                myAssignments
+            }
+            else -> { // "ALL" - Mostrar TODAS las solicitudes
+                allRequests
+            }
         }
+
+        Log.d("RouteMapActivity", "Mostrando ${filteredRequests.size} solicitudes con filtro: $currentFilter")
         displayRequestsOnMap(filteredRequests)
     }
 
@@ -179,7 +210,9 @@ class RouteMapActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMa
         } else {
             requestLocationPermission()
         }
-        viewModel.loadPendingRequests()
+
+        // ✅ CORREGIDO: Cargar TODAS las solicitudes (no solo pendientes)
+        viewModel.loadAllRequestsForMap()
     }
 
     private fun requestLocationPermission() {
@@ -234,19 +267,18 @@ class RouteMapActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMa
                 request.longitude?.let { lng ->
                     val location = LatLng(lat, lng)
 
-                    // ✅ USAR FUNCIÓN SEGURA PARA assignmentStatus
-                    val assignmentStatus = request.getSafeAssignmentStatus()
+                    // ✅ LÓGICA SIMPLIFICADA DE COLORES - 3 ESTADOS CLAROS
+                    val markerColor = when {
+                        // VERDE: Recolectadas/Completadas
+                        request.status == "COLLECTED" || request.assignmentStatus == "COMPLETED" ->
+                            BitmapDescriptorFactory.HUE_GREEN
 
-                    val markerColor = when (assignmentStatus) {
-                        "AVAILABLE" -> BitmapDescriptorFactory.HUE_GREEN
-                        "PENDING" -> if (request.assignedCollectorId == authManager.getUserId()) {
+                        // AZUL: Asignadas al recolector actual
+                        request.isAssignedTo(authManager.getUserId()) ->
                             BitmapDescriptorFactory.HUE_BLUE
-                        } else {
-                            BitmapDescriptorFactory.HUE_ORANGE
-                        }
-                        "IN_PROGRESS" -> BitmapDescriptorFactory.HUE_BLUE
-                        "COMPLETED" -> BitmapDescriptorFactory.HUE_VIOLET
-                        else -> BitmapDescriptorFactory.HUE_RED
+
+                        // NARANJA: Pendientes (todas las demás)
+                        else -> BitmapDescriptorFactory.HUE_ORANGE
                     }
 
                     val marker = addMarkerForRequest(location, request, markerColor)
@@ -261,19 +293,27 @@ class RouteMapActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMa
             val bounds = boundsBuilder.build()
             googleMap.animateCamera(CameraUpdateFactory.newLatLngBounds(bounds, 100))
         }
+
+        // Mostrar conteo actual
+        val countText = when (currentFilter) {
+            "ALL" -> "Mostrando ${requests.size} solicitudes (Todas)"
+            "MY_ASSIGNMENTS" -> "Mostrando ${requests.size} solicitudes (Mis Asignaciones)"
+            else -> "Mostrando ${requests.size} solicitudes"
+        }
+        Toast.makeText(this, countText, Toast.LENGTH_SHORT).show()
     }
 
-    // ✅ CORREGIDO: Añadir parámetro markerColor
     private fun addMarkerForRequest(location: LatLng, request: CollectionRequest, markerColor: Float): Marker {
-        // ✅ USAR FUNCIÓN SEGURA PARA userName
         val userName = request.getSafeUserName()
 
-        val snippet = when (request.status) {
-            "PENDING" -> "Pendiente • ${request.material} • $userName"
-            "COLLECTED" -> "Recolectado • ${request.material} • $userName"
-            "SCHEDULED" -> "Programado • ${request.material} • $userName"
-            else -> "${request.status} • ${request.material} • $userName"
+        // Texto del marcador que muestra el estado
+        val statusText = when {
+            request.status == "COLLECTED" || request.assignmentStatus == "COMPLETED" -> "RECOLECTADA"
+            request.isAssignedTo(authManager.getUserId()) -> "ASIGNADA A MÍ"
+            else -> "PENDIENTE"
         }
+
+        val snippet = "$statusText • ${request.material} • $userName"
 
         return googleMap.addMarker(
             MarkerOptions()
@@ -295,11 +335,12 @@ class RouteMapActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMa
     private fun showRequestInfo(request: CollectionRequest) {
         with(binding) {
             tvPopupCode.text = request.code
-            tvPopupUser.text = request.userName
+            tvPopupUser.text = request.getSafeUserName()
             tvPopupMaterial.text = request.material
             tvPopupAddress.text = request.getFullAddress()
+
             // Configurar estado con color correspondiente
-            val (statusText, backgroundRes) = getStatusInfo(request.status)
+            val (statusText, backgroundRes) = getStatusInfo(request)
             tvPopupStatus.text = statusText
             tvPopupStatus.setBackgroundResource(backgroundRes)
 
@@ -307,18 +348,23 @@ class RouteMapActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMa
         }
     }
 
-    private fun hideRequestInfo() {
-        binding.cardRequestInfo.visibility = View.GONE
+    private fun getStatusInfo(request: CollectionRequest): Pair<String, Int> {
+        return when {
+            request.status == "COLLECTED" || request.assignmentStatus == "COMPLETED" ->
+                "RECOLECTADA" to R.drawable.bg_status_collected
+
+            request.isAssignedTo(authManager.getUserId()) ->
+                "ASIGNADA A MÍ" to R.drawable.bg_status_in_progress
+
+            request.status == "PENDING" && request.assignmentStatus == "AVAILABLE" ->
+                "DISPONIBLE" to R.drawable.bg_status_available
+
+            else -> "PENDIENTE" to R.drawable.bg_status_pending
+        }
     }
 
-    private fun getStatusInfo(status: String): Pair<String, Int> {
-        return when (status) {
-            "PENDING" -> "PENDIENTE" to R.drawable.bg_status_pending
-            "COLLECTED" -> "RECOLECTADO" to R.drawable.bg_status_collected
-            "SCHEDULED" -> "PROGRAMADO" to R.drawable.bg_status_scheduled
-            "CANCELLED" -> "CANCELADO" to R.drawable.bg_status_cancelled
-            else -> status to R.drawable.bg_status_pending
-        }
+    private fun hideRequestInfo() {
+        binding.cardRequestInfo.visibility = View.GONE
     }
 
     private fun navigateToSelectedRequest() {
@@ -364,20 +410,24 @@ class RouteMapActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMa
     }
 
     private fun optimizeRoute() {
-        val pendingRequests = allRequests.filter { it.status == "PENDING" }
-            .mapNotNull { request ->
-                request.latitude?.let { lat ->
-                    request.longitude?.let { lng ->
-                        LatLng(lat, lng) to request
-                    }
+        // Solo optimizar rutas para solicitudes PENDIENTES (naranja) disponibles
+        val pendingRequests = allRequests.filter {
+            it.status == "PENDING" &&
+                    it.assignmentStatus == "AVAILABLE" &&
+                    it.hasValidLocation()
+        }.mapNotNull { request ->
+            request.latitude?.let { lat ->
+                request.longitude?.let { lng ->
+                    LatLng(lat, lng) to request
                 }
             }
+        }
 
         if (pendingRequests.size > 1) {
             drawOptimizedRoute(pendingRequests.map { it.first })
-            Toast.makeText(this, "Ruta optimizada para ${pendingRequests.size} ubicaciones pendientes", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, "Ruta optimizada para ${pendingRequests.size} solicitudes pendientes", Toast.LENGTH_SHORT).show()
         } else {
-            Toast.makeText(this, "Se necesitan al menos 2 ubicaciones pendientes para optimizar la ruta", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, "Se necesitan al menos 2 solicitudes pendientes para optimizar la ruta", Toast.LENGTH_SHORT).show()
         }
     }
 
@@ -386,7 +436,7 @@ class RouteMapActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMa
             PolylineOptions()
                 .addAll(route)
                 .width(8f)
-                .color(ContextCompat.getColor(this, R.color.green_primary))
+                .color(ContextCompat.getColor(this, R.color.orange))
                 .geodesic(true)
         )
     }
@@ -420,6 +470,7 @@ class RouteMapActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMa
 
     override fun onResume() {
         super.onResume()
-        viewModel.loadPendingRequests()
+        // Recargar todas las solicitudes al reanudar
+        viewModel.loadAllRequestsForMap()
     }
 }
